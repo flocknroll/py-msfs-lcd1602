@@ -52,79 +52,85 @@ EM_SHIFT_DISPLAY_OFF = 0
 DDRAM_ADR_SET_CMD = 1 << 7  # 0x80
 DDRAM_SECOND_ROW  = 0x40
 
+# Set CGRAM address
+CGRAM_ADR_SET_CMD = 1 << 6  # 0x40
 
-def clear(bus_id: int):
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DISPLAY_CLEAR_CMD)
+def clear(bus: SMBus):
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DISPLAY_CLEAR_CMD)
     sleep(0.0015)
 
-def set_function(bus_id: int, two_lines: bool=True, eight_bit_mode: bool=False, big_font: bool=False):
+def set_function(bus: SMBus, two_lines: bool=True, eight_bit_mode: bool=False, big_font: bool=False):
     cmd = FUNCTION_SET_CMD
     cmd |= FS_2_LINES_MODE if two_lines else FS_1_LINE_MODE
     cmd |= FS_8BIT_MODE if eight_bit_mode else FS_4BIT_MODE
     cmd |= FS_BIG_FONT if big_font else FS_SMALL_FONT
 
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
     sleep(0.0004)
 
-def set_display_control(bus_id: int, on: bool=True, cursor: bool=True, blink: bool=True):
+def set_display_control(bus: SMBus, on: bool=True, cursor: bool=True, blink: bool=True):
     cmd = DISPLAY_CONTROL_CMD
     cmd |= DC_DISPLAY_ON if on else DC_DISPLAY_OFF
     cmd |= DC_CURSOR_ON if cursor else DC_CURSOR_OFF
     cmd |= DC_BLINK_ON if blink else DC_BLINK_OFF
 
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
     sleep(0.0004)
 
-def set_entry_mode(bus_id: int, shift_display: bool=False, left_dir: bool=False):
+def set_entry_mode(bus: SMBus, shift_display: bool=False, left_dir: bool=False):
     cmd = ENTRY_MODE_SET_CMD
     cmd |= EM_SHIFT_DISPLAY_ON if shift_display else EM_SHIFT_DISPLAY_OFF
     cmd |= EM_MOVE_LEFT if left_dir else EM_MOVE_RIGHT
 
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, cmd)
     sleep(0.0004)
 
-def set_cursor_pos(bus_id: int, row: int, col: int):
+def set_cursor_pos(bus: SMBus, row: int, col: int):
     addr = row * DDRAM_SECOND_ROW + col
 
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DDRAM_ADR_SET_CMD | addr)
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DDRAM_ADR_SET_CMD | addr)
     sleep(0.0004)
 
-def init_lcd(bus_id: int):
-    set_function(bus_id)
-    set_display_control(bus_id)
-    clear(bus_id)
-    set_entry_mode(bus_id)
+def define_char(bus: SMBus, index: int, data: list) -> int:
+    if index > 15:
+        raise Exception("Only 16 CGRAM slots")
+    addr = index << 3
+    
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, CGRAM_ADR_SET_CMD | addr)
+    sleep(0.0004)
+    for i in range(8):
+        bus.write_byte_data(LCD_ADDRESS, LCD_DATA_REG, data[i])
 
-def write(bus_id: int, text: str):
-    with SMBus(bus_id) as bus:
-        bus.write_i2c_block_data(LCD_ADDRESS, LCD_DATA_REG, [c for c in text.encode("ascii")])
+    return index
 
+def init_lcd(bus: SMBus):
+    set_function(bus)
+    set_display_control(bus)
+    clear(bus)
+    set_entry_mode(bus)
 
-def rgb_full_on(bus_id: int):
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0x55)  # Full ON
+def write_ascii_string(bus: SMBus, text: str):
+    bus.write_i2c_block_data(LCD_ADDRESS, LCD_DATA_REG, [c for c in text.encode("ascii")])
 
-def rgb_full_control(bus_id: int):
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0xFF)  # Full control
+def write_int(bus: SMBus, value: int):
+    bus.write_byte_data(LCD_ADDRESS, LCD_DATA_REG, value)
 
-        # TODO: set mode 1 & 2
+def rgb_full_on(bus: SMBus):
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0x55)  # Full ON
 
-        # No blinking
-        bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_DUTY_CYCLE_REG, 255)
-        bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_PERIOD_REG, 0)
+def rgb_full_control(bus: SMBus):
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0xFF)  # Full control
 
-def set_rgb(bus_id: int, r: int, g: int, b: int):
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(RGB_ADDRESS, RGB_RED_PWM_REG, r)
-        bus.write_byte_data(RGB_ADDRESS, RGB_GREEN_PWM_REG, g)
-        bus.write_byte_data(RGB_ADDRESS, RGB_BLUE_PWM_REG, b)
+    # TODO: set mode 1 & 2
 
-def rgb_off(bus_id: int):
-    with SMBus(bus_id) as bus:
-        bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0)  # Full OFF
+    # No blinking
+    bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_DUTY_CYCLE_REG, 255)
+    bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_PERIOD_REG, 0)
+
+def set_rgb(bus: SMBus, r: int, g: int, b: int):
+    bus.write_byte_data(RGB_ADDRESS, RGB_RED_PWM_REG, r)
+    bus.write_byte_data(RGB_ADDRESS, RGB_GREEN_PWM_REG, g)
+    bus.write_byte_data(RGB_ADDRESS, RGB_BLUE_PWM_REG, b)
+
+def rgb_off(bus: SMBus):
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0)  # Full OFF
