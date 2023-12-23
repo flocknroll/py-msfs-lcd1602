@@ -1,22 +1,28 @@
 import zmq
+import uvicorn
 import argparse
-import time
 
-from datetime import datetime
+from fastapi import FastAPI, Request, HTTPException
 
 
-parser = argparse.ArgumentParser("LCD1602 controller backend")
-parser.add_argument("--bus-id", default=3)
+app = FastAPI()
+
+parser = argparse.ArgumentParser("LCD1602 controller API")
 parser.add_argument("--port", default=5555)
+params = parser.parse_args()
 
-if __name__ == "__main__":
-    params = parser.parse_args()
+context = zmq.Context()
+socket = context.socket(zmq.PUB)
+socket.bind(f"tcp://localhost:{params.port}")
 
-    context = zmq.Context()
-    socket = context.socket(zmq.PUB)
-    socket.bind(f"tcp://*:{params.port}")
 
-    while True:
-        socket.send_string(f"{datetime.now().strftime('%H:%M:%S:%f')}")
+@app.post("/")
+async def root(request: Request):
+    body = await request.body()
 
-        time.sleep(1)
+    if body:
+        socket.send(body)
+    return "OK"
+
+
+uvicorn.run(app)

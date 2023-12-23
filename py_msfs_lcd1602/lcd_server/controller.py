@@ -1,6 +1,6 @@
 import zmq
 import argparse
-from py_msfs_lcd1602.driver.lcd1602 import LCD1602
+from py_msfs_lcd1602.driver import LCD1602
 
 
 parser = argparse.ArgumentParser("LCD1602 controller backend")
@@ -26,7 +26,7 @@ if __name__ == "__main__":
             #  Wait for next request from client
             message = socket.recv_string()
             
-            lcd.return_home()
+            lcd.clear()
             lcd.write_ascii_string(message)
     finally:
         lcd.clear()

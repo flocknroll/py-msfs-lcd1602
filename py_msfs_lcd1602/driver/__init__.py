@@ -1,1 +1,1 @@
-from lcd1602 import LCD1602
+from .lcd1602 import LCD1602
