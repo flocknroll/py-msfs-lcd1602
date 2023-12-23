@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "py-msfs-lcd1602"
+version = "0.1.0"
+description = "Python resources to show MSFS informations on a LCD1602"
+authors = ["flocknroll <dosso.florent@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+smbus2 = "^0.4.3"
+fastapi = "^0.105.0"
+pyzmq = "^25.1.2"
+pysimconnect = "^0.2.6"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
