@@ -58,6 +58,10 @@ CGRAM_ADR_SET_CMD = 1 << 6  # 0x40
 # Return home
 RETURN_HOME_CMD = 1 << 1  # 0x02
 
+# RGB Modes
+RGB_MODE2_BLINKING_ENABLED  = 1 << 5 # 0x20
+RGB_MODE2_BLINKING_DISABLED = 0
+
 DEFAULT_WAIT = 0.0004
 
 class LCD1602:
@@ -147,14 +151,18 @@ class LCD1602:
         sleep(DEFAULT_WAIT)
 
 
+    def rgb_set_modes(self, blinking: bool=False):
+        cmd2 = 0
+        cmd2 |= RGB_MODE2_BLINKING_ENABLED if blinking else RGB_MODE2_BLINKING_DISABLED
+
+        self.bus.write_byte_data(RGB_ADDRESS, RGB_MODE1_REG, 0x0)
+        self.bus.write_byte_data(RGB_ADDRESS, RGB_MODE2_REG, cmd2)
 
     def rgb_full_on(self):
         self.bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0x55)  # Full ON
 
     def rgb_full_control(self):
         self.bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0xFF)  # Full control
-
-        # TODO: set mode 1 & 2
 
         # No blinking
         self.bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_DUTY_CYCLE_REG, 255)

@@ -12,6 +12,7 @@ if __name__ == "__main__":
         lcd = LCD1602(params.bus_id)
 
         lcd.init_lcd()
+        lcd.rgb_set_modes()
         lcd.rgb_full_control()
         lcd.set_rgb(150, 220, 40)
 

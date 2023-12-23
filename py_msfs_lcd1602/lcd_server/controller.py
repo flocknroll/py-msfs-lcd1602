@@ -1,21 +1,32 @@
 import zmq
 import argparse
-from py_msfs_lcd1602.lcd1602 import LCD1602
+from py_msfs_lcd1602.driver.lcd1602 import LCD1602
 
 
-context = zmq.Context()
-socket = context.socket(zmq.REP)
-socket.bind("tcp://*:5555")
+parser = argparse.ArgumentParser("LCD1602 controller backend")
+parser.add_argument("--bus-id", default=3)
+parser.add_argument("--port", default=5555)
 
 if __name__ == "__main__":
-    lcd = LCD1602(3)
+    params = parser.parse_args()
+
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    socket.connect(f"tcp://localhost:{params.port}")
+    socket.setsockopt(zmq.SUBSCRIBE, b"")
+
+    lcd = LCD1602(params.bus_id)
     lcd.init_lcd()
+    lcd.rgb_set_modes()
+    lcd.rgb_full_control()
+    lcd.set_rgb(220, 220, 220)
 
     try:
         while True:
             #  Wait for next request from client
-            message = socket.recv()
+            message = socket.recv_string()
             
+            lcd.return_home()
             lcd.write_ascii_string(message)
     finally:
         lcd.clear()
