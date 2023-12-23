@@ -1,9 +1,13 @@
 [tool.poetry]
-name = "py-msfs-lcd1602"
+name = "py_msfs_lcd1602"
 version = "0.1.0"
 description = "Python resources to show MSFS informations on a LCD1602"
 authors = ["flocknroll <dosso.florent@gmail.com>"]
 readme = "README.md"
+
+packages = [
+  { include = "py_msfs_lcd1602" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
