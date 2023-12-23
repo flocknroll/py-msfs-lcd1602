@@ -1,21 +1,23 @@
 from smbus2 import SMBus
 from time import sleep
 
+# I2C addresses
 LCD_ADDRESS = 0x3e
 RGB_ADDRESS = 0x60
 
-# Masks
-
+## Masks
 # Register selection
 LCD_INSTR_REG = 1 << 7  # No R/S bit (instruction) but control bit set for command data
 LCD_DATA_REG  = 1 << 6  # R/S bit set (data) but no control bit set -> data stream
 
 RGB_MODE1_REG      = 0x00
 RGB_MODE2_REG      = 0x01
-RGB_LED0_REG       = 0x02
-RGB_LED1_REG       = 0x03
-RGB_LED2_REG       = 0x04
-RGB_LED3_REG       = 0x05
+RGB_BLUE_PWM_REG   = 0x02
+RGB_GREEN_PWM_REG  = 0x03
+RGB_RED_PWM_REG    = 0x04
+RGB_GROUP_PWM_REG  = 0x06   # if DMBLNK = 0
+RGB_GROUP_BLINK_DUTY_CYCLE_REG = 0x06   # if DMBLNK = 1
+RGB_GROUP_BLINK_PERIOD_REG     = 0x07   # if DMBLNK = 1
 RGB_LED_OUTPUT_REG = 0x08
 
 # Function set
@@ -50,10 +52,15 @@ DDRAM_ADR_SET_CMD = 1 << 7  # 0x80
 DDRAM_SECOND_ROW  = 0x40
 
 
-def init_lcd(bus_id: int):
+def clear(bus_id: int):
     bus = SMBus(bus_id)
 
-    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0x55)  # Full ON
+    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DISPLAY_CLEAR_CMD)
+    sleep(0.0015)
+
+
+def init_lcd(bus_id: int):
+    bus = SMBus(bus_id)
 
     bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, FUNCTION_SET_CMD | FS_2_LINES_MODE | FS_4BIT_MODE | FS_SMALL_FONT)
     sleep(0.0004)
@@ -61,11 +68,11 @@ def init_lcd(bus_id: int):
     bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DISPLAY_CONTROL_CMD | DC_DISPLAY_ON | DC_CURSOR_ON | DC_BLINK_ON)
     sleep(0.0004)
 
-    bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DISPLAY_CLEAR_CMD)
-    sleep(0.0020)
+    clear(bus_id)
 
     bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, ENTRY_MODE_SET_CMD | EM_MOVE_RIGHT)
     sleep(0.0004)
+
 
 def set_cursor(bus_id: int, row: int, col: int):
     bus = SMBus(bus_id)
@@ -75,6 +82,33 @@ def set_cursor(bus_id: int, row: int, col: int):
     bus.write_byte_data(LCD_ADDRESS, LCD_INSTR_REG, DDRAM_ADR_SET_CMD | addr)
     sleep(0.0004)
 
+
 def write(bus_id: int, text: str):
     bus = SMBus(bus_id)
     bus.write_i2c_block_data(LCD_ADDRESS, LCD_DATA_REG, [c for c in text.encode("ascii")])
+
+
+def rgb_full_on(bus_id: int):
+    bus = SMBus(bus_id)
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0x55)  # Full ON
+
+def rgb_full_control(bus_id: int):
+    bus = SMBus(bus_id)
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0xFF)  # Full control
+
+    # TODO: set mode 1 & 2
+
+    # No blinking
+    bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_DUTY_CYCLE_REG, 255)
+    bus.write_byte_data(RGB_ADDRESS, RGB_GROUP_BLINK_PERIOD_REG, 0)
+
+def set_rgb(bus_id: int, r: int, g: int, b: int):
+    bus = SMBus(bus_id)
+
+    bus.write_byte_data(RGB_ADDRESS, RGB_RED_PWM_REG, r)
+    bus.write_byte_data(RGB_ADDRESS, RGB_GREEN_PWM_REG, g)
+    bus.write_byte_data(RGB_ADDRESS, RGB_BLUE_PWM_REG, b)
+
+def rgb_off(bus_id: int):
+    bus = SMBus(bus_id)
+    bus.write_byte_data(RGB_ADDRESS, RGB_LED_OUTPUT_REG, 0)  # Full OFF
