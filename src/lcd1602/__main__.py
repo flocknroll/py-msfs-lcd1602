@@ -1,7 +1,7 @@
-import lcd1602
-import time
 import argparse
-from smbus2 import SMBus
+from lcd1602 import LCD1602
+from time import sleep
+from datetime import datetime
 
 parser = argparse.ArgumentParser("LCD1602 test program")
 parser.add_argument("--bus-id", default=3)
@@ -9,11 +9,11 @@ parser.add_argument("--bus-id", default=3)
 if __name__ == "__main__":
     params = parser.parse_args()
     try:
-        bus = SMBus(params.bus_id)
+        lcd = LCD1602(params.bus_id)
 
-        lcd1602.init_lcd(bus)
-        lcd1602.rgb_full_control(bus)
-        lcd1602.set_rgb(bus, 150, 220, 40)
+        lcd.init_lcd()
+        lcd.rgb_full_control()
+        lcd.set_rgb(150, 220, 40)
 
         data = [
             0b11111,
@@ -25,7 +25,7 @@ if __name__ == "__main__":
             0b10001,
             0b11111,
         ]
-        addr = lcd1602.define_char(bus, 1, data)
+        addr = lcd.define_char(1, data)
 
         data = [
             0b00011,
@@ -37,13 +37,17 @@ if __name__ == "__main__":
             0b10001,
             0b01111,
         ]
-        addr = lcd1602.define_char(bus, 0, data)
-        lcd1602.set_cursor_pos(bus, 0, 0)
-        lcd1602.write_int(bus, 0)
-        lcd1602.write_int(bus, 1)
-
-        time.sleep(15)
+        addr = lcd.define_char(0, data)
+        lcd.set_cursor_pos(0, 0)
+        lcd.write_int(0)
+        lcd.write_int(1)
+        lcd.set_display_control(True, False, False)
+        while True:
+            lcd.return_home()
+            lcd.write_ascii_string(datetime.now().strftime("%H:%M:%S:%f"))
+            sleep(0.5)
+        
     finally:
-        lcd1602.clear(bus)
-        lcd1602.rgb_off(bus)
-        bus.close()
+        lcd.clear()
+        lcd.rgb_off()
+        lcd.close()
