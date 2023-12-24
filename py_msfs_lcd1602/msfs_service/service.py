@@ -6,7 +6,7 @@ import json
 from time import sleep
 from simconnect import SimConnect, PERIOD_VISUAL_FRAME
 
-from py_msfs_lcd1602.models.api import MSFSDataList
+from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
 
 
 
@@ -48,7 +48,8 @@ if __name__ == "__main__":
             logging.info(dict(dd.simdata))
             logging.info(changed)
 
-            model = MSFSDataList.from_dict(changed)
+            data = [MSFSData(name = k, value = v) for k, v in changed.items()]
+            model = MSFSDataList(data = data)
 
             requests.post(params.api_host, model.model_dump_json())
 

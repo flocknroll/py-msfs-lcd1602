@@ -21,6 +21,7 @@ socket.bind(f"tcp://localhost:{params.port}")
 @app.post("/")
 async def root(mdl: MSFSDataList):
 
+    print(mdl)
     socket.send_string(mdl.model_dump_json())
     
     return "OK"
