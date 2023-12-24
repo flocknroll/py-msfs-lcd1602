@@ -139,6 +139,9 @@ class LCD1602:
         self.set_entry_mode(shift_display, left_dir)
 
     def write_ascii_string(self, text: str):
+        # TODO: chunk text
+        text = text[0:32]
+
         self.bus.write_i2c_block_data(LCD_ADDRESS, LCD_DATA_REG, [c for c in text.encode("ascii")])
         sleep(DEFAULT_WAIT)
 

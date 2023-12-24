@@ -1,33 +1,57 @@
+import logging
+import requests
+import argparse
+import json
+
 from time import sleep
 from simconnect import SimConnect, PERIOD_VISUAL_FRAME
 
-# open a connection to the SDK
-# or use as a context via `with SimConnect() as sc: ... `
-sc = SimConnect(dll_path="D:/Games/SteamLibrary/steamapps/common/MicrosoftFlightSimulator/SimConnect.dll")
+from py_msfs_lcd1602.models.api import MSFSDataList
 
-# one-off blocking fetch of a single simulator variable,
-# which will wait up to 1s (default) to receive the value
-altitude = sc.get_simdatum("Indicated Altitude")
-print("Got indicated altitude", altitude)
 
-# subscribing to one or more variables is much more efficient,
-# with the SDK sending updated values up to once per simulator frame.
-# the variables are tracked in `datadef.simdata`
-# which is a dictionary that tracks the last modified time
-# of each variable.  changes can also trigger an optional callback function
-datadef = sc.subscribe_simdata(
-    [
-        "Indicated Altitude"
-    ],
-    # request an update every ten rendered frames
-    period=PERIOD_VISUAL_FRAME,
-    interval=10,
-)
-print("Inferred variable units", datadef.get_units())
 
-# track the most recent data update
-latest = datadef.simdata.latest()
-print(latest)
+parser = argparse.ArgumentParser("MSFS to LCS service")
+parser.add_argument("--api-host", default="http://192.168.1.25:8081")
 
-# explicity close the SDK connection
-sc.Close()
+if __name__ == "__main__":
+    params = parser.parse_args()
+
+    sc = None
+    while not sc:
+        try:
+            sc = SimConnect()
+        except OSError as oe:
+            logging.error(oe)
+            sleep(1)
+
+    dd = sc.subscribe_simdata(
+        [
+            "INDICATED ALTITUDE",
+            "AIRSPEED INDICATED",
+            "AIRSPEED MACH",
+            "VERTICAL SPEED"
+        ],
+        # request an update every ten rendered frames
+        period=PERIOD_VISUAL_FRAME,
+        interval=30,
+    )
+
+    latest = 0
+    headings = None
+
+    try:
+        while True:
+            sc.receive(timeout_seconds=1)
+
+            changed = dd.simdata.changedsince(latest)
+
+            logging.info(dict(dd.simdata))
+            logging.info(changed)
+
+            model = MSFSDataList.from_dict(changed)
+
+            requests.post(params.api_host, model.model_dump_json())
+
+            latest = dd.simdata.latest()
+    finally:
+        sc.Close()

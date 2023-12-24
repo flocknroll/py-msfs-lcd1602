@@ -1,9 +1,11 @@
 import zmq
 import uvicorn
 import argparse
+import logging
 
 from fastapi import FastAPI, Request, HTTPException
 
+from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
 
 app = FastAPI()
 
@@ -17,12 +19,11 @@ socket.bind(f"tcp://localhost:{params.port}")
 
 
 @app.post("/")
-async def root(request: Request):
-    body = await request.body()
+async def root(mdl: MSFSDataList):
 
-    if body:
-        socket.send(body)
+    socket.send_string(mdl.model_dump_json())
+    
     return "OK"
 
 
-uvicorn.run(app)
+uvicorn.run(app, host="0.0.0.0", port=8081)

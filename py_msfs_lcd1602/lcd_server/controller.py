@@ -1,5 +1,7 @@
 import zmq
 import argparse
+import logging
+
 from py_msfs_lcd1602.driver import LCD1602
 
 
@@ -26,6 +28,8 @@ if __name__ == "__main__":
             #  Wait for next request from client
             message = socket.recv_string()
             
+            logging.info(f"Received message: {message}")
+
             lcd.clear()
             lcd.write_ascii_string(message)
     finally:
