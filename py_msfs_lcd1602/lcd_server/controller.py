@@ -1,6 +1,7 @@
 import zmq
 import argparse
 import logging
+import json
 
 from py_msfs_lcd1602.driver import LCD1602
 
@@ -26,12 +27,14 @@ if __name__ == "__main__":
     try:
         while True:
             #  Wait for next request from client
-            message = socket.recv_string()
+            data = json.loads(socket.recv_string())
             
-            logging.info(f"Received message: {message}")
+            logging.info(f"Received message: {data}")
+
+            # TODO: handle JSON message
 
             lcd.clear()
-            lcd.write_ascii_string(message)
+            lcd.write_ascii_string(data)
     finally:
         lcd.clear()
         lcd.rgb_off()
