@@ -23,5 +23,8 @@ socket.bind(f"tcp://localhost:{params.zmq_port}")
 async def update_data(mdl: MSFSDataList):
     socket.send_string(mdl.json())
 
+def run():
+    uvicorn.run(app, host="0.0.0.0", port=params.http_port)
 
-uvicorn.run(app, host="0.0.0.0", port=params.http_port)
+if __name__ == "__main__":
+    run()

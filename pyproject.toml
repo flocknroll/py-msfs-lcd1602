@@ -5,10 +5,6 @@ description = "Python resources to show MSFS informations on a LCD1602"
 authors = ["flocknroll <dosso.florent@gmail.com>"]
 readme = "README.md"
 
-packages = [
-  { include = "py_msfs_lcd1602" }
-]
-
 [tool.poetry.dependencies]
 python = "^3.11"
 smbus2 = "^0.4.3"
@@ -20,6 +16,10 @@ uvicorn = "^0.25.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
+
+[tool.poetry.scripts]
+lcd_server_api = 'py_msfs_lcd1602.lcd_server.api:run'
+lcd_server_controller = 'py_msfs_lcd1602.lcd_server.controller:run'
 
 [build-system]
 requires = ["poetry-core"]

@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser("LCD1602 controller backend")
 parser.add_argument("--bus-id", default=3)
 parser.add_argument("--port", default=5555)
 
-if __name__ == "__main__":
+def run():
     params = parser.parse_args()
 
     context = zmq.Context()
@@ -39,3 +39,6 @@ if __name__ == "__main__":
         lcd.clear()
         lcd.rgb_off()
         lcd.close()
+
+if __name__ == "__main__":
+    run()
