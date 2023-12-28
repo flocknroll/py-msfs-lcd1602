@@ -51,7 +51,8 @@ if __name__ == "__main__":
             data = [MSFSData(name = k, value = v) for k, v in changed.items()]
             model = MSFSDataList(data = data)
 
-            requests.post(f"{params.api_host}/update_data", model.model_dump_json())
+            if len(data):
+                requests.post(f"{params.api_host}/update_data", model.model_dump_json())
 
             latest = dd.simdata.latest()
     finally:

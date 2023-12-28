@@ -29,6 +29,16 @@ async def clear():
     data = { "command": "clear" }
     socket.send_string(json.dumps(data))
 
+@app.post("/set_rgb/{r}/{g}/{b}", status_code=202)
+async def set_rgb(r: int, g: int, b: int):
+    data = {
+        "command": "set_rgb",
+        "r": r,
+        "g": g,
+        "b": b
+    }
+    socket.send_string(json.dumps(data))
+
 def run():
     uvicorn.run(app, host="0.0.0.0", port=params.http_port)
 
