@@ -20,6 +20,7 @@ pytest = "^7.4.3"
 [tool.poetry.scripts]
 lcd_server_api = "py_msfs_lcd1602.lcd_server.api:run"
 lcd_server_controller = "py_msfs_lcd1602.lcd_server.controller:run"
+msfs_service = "py_msfs_lcd1602.msfs_service.service:run"
 
 [build-system]
 requires = ["poetry-core"]

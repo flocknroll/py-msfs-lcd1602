@@ -14,7 +14,7 @@ from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
 parser = argparse.ArgumentParser("MSFS to LCS service")
 parser.add_argument("--api-host", default="http://192.168.1.25:8081")
 
-if __name__ == "__main__":
+def run():
     params = parser.parse_args()
 
     sc = None
@@ -75,3 +75,6 @@ if __name__ == "__main__":
             latest = dd.simdata.latest()
     finally:
         sc.Close()
+
+if __name__ == "__main__":
+    run()
