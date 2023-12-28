@@ -2,6 +2,7 @@ import logging
 import requests
 import argparse
 import json
+import time
 
 from time import sleep
 from simconnect import SimConnect, PERIOD_VISUAL_FRAME
@@ -30,7 +31,8 @@ if __name__ == "__main__":
             "AIRSPEED INDICATED",
             "AIRSPEED MACH",
             "VERTICAL SPEED",
-            "VARIOMETER RATE"
+            "VARIOMETER RATE",
+            "PLANE ALTITUDE"
         ],
         # request an update every ten rendered frames
         period=PERIOD_VISUAL_FRAME,
@@ -40,16 +42,31 @@ if __name__ == "__main__":
     latest = 0
     headings = None
 
+    last_alt = {
+        "value": 0,
+        "time": time.time()
+    }
+
     try:
         while True:
             sc.receive(timeout_seconds=1)
-
+            received_time = time.time()
             changed = dd.simdata.changedsince(latest)
 
             logging.info(dict(dd.simdata))
             logging.info(changed)
 
             data = [MSFSData(name = k, value = v) for k, v in changed.items()]
+
+            if "PLANE_ALTITUDE" in dd.simdata:
+                plane_alt = dd.simdata["PLANE ALTITUDE"]
+                calculated_vs = (last_alt["value"] - plane_alt) / (received_time - last_alt["time"]) * 60.0
+                last_alt = {
+                    "value": plane_alt,
+                    "time": received_time
+                }
+                data.append(MSFSData(name = "CALCULATED_VS", value = calculated_vs))
+            
             model = MSFSDataList(data = data)
 
             if len(data):
