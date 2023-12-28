@@ -95,7 +95,7 @@ def run():
                         lcd.set_cursor_pos(1, 8)
                         lcd.write_int(MC_CHAR)
                         lcd.write_ascii_string(f"{value}".ljust(7)[0:7])
-                    elif name == "VERTICAL SPEED":
+                    elif name == "VARIOMETER RATE": # "VERTICAL SPEED"
                         lcd.set_cursor_pos(0, 8)
                         lcd.write_int(VS_CHAR)
                         lcd.write_ascii_string(f"{int(value)}".ljust(7)[0:7])

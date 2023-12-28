@@ -29,7 +29,8 @@ if __name__ == "__main__":
             "INDICATED ALTITUDE",
             "AIRSPEED INDICATED",
             "AIRSPEED MACH",
-            "VERTICAL SPEED"
+            "VERTICAL SPEED",
+            "VARIOMETER RATE"
         ],
         # request an update every ten rendered frames
         period=PERIOD_VISUAL_FRAME,
