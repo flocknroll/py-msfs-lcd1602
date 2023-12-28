@@ -9,5 +9,6 @@ poetry2nix.mkPoetryApplication {
     overrides = poetry2nix.defaultPoetryOverrides.extend(self: super: {
         lunr = super.lunr.overridePythonAttrs(old: { buildInputs = (old.buildInputs or [ ]) ++ [ super.hatchling super.hatch-fancy-pypi-readme ]; });
         pysimconnect = super.pysimconnect.overridePythonAttrs(old: { buildInputs = (old.buildInputs or [ ]) ++ [ super.setuptools ]; });
+        joserfc = super.joserfc.overridePythonAttrs(old: { buildInputs = (old.buildInputs or [ ]) ++ [ super.setuptools ]; });
     });
 }

@@ -4,7 +4,9 @@ import argparse
 import logging
 import json
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBearer
+from joserfc.jws import deserialize_compact
 
 from py_msfs_lcd1602.models.api import MSFSDataList
 
@@ -20,12 +22,20 @@ socket = context.socket(zmq.PUB)
 socket.bind(f"tcp://localhost:{params.zmq_port}")
 
 
+def jws_validation(token=Depends(HTTPBearer())):
+    # TODO
+    # deserialize_compact(token, "test")
+    return True
+
 @app.post("/update_data", status_code=202)
 async def update_data(mdl: MSFSDataList):
     socket.send_string(mdl.model_dump_json())
 
 @app.post("/clear", status_code=202)
-async def clear():
+async def clear(authorized=Depends(jws_validation)):
+    if not authorized:
+        raise HTTPException(403)
+
     data = { "command": "clear" }
     socket.send_string(json.dumps(data))
 
