@@ -2,6 +2,7 @@ import zmq
 import uvicorn
 import argparse
 import logging
+import json
 
 from fastapi import FastAPI, HTTPException
 
@@ -21,7 +22,12 @@ socket.bind(f"tcp://localhost:{params.zmq_port}")
 
 @app.post("/update_data", status_code=202)
 async def update_data(mdl: MSFSDataList):
-    socket.send_string(mdl.json())
+    socket.send_string(mdl.model_dump_json())
+
+@app.post("/clear", status_code=202)
+async def clear():
+    data = { "command": "clear" }
+    socket.send_string(json.dumps(data))
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=params.http_port)

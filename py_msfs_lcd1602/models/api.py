@@ -7,4 +7,5 @@ class MSFSData(BaseModel):
     value: float
 
 class MSFSDataList(BaseModel):
+    command: str="update_data"
     data: List[MSFSData]
