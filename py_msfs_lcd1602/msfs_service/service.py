@@ -1,10 +1,10 @@
 import logging
 import requests
 import argparse
-import json
 import time
 
 from time import sleep
+from joserfc.jws import serialize_compact
 from simconnect import SimConnect, PERIOD_VISUAL_FRAME
 
 from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
@@ -40,7 +40,6 @@ def run():
     )
 
     latest = 0
-    headings = None
 
     last_alt = {
         "value": 0,
@@ -70,7 +69,11 @@ def run():
             model = MSFSDataList(data = data)
 
             if len(data):
-                requests.post(f"{params.api_host}/update_data", model.model_dump_json())
+                token = serialize_compact({"alg": "HS256"}, model.model_dump_json(), "test")
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                }
+                requests.post(f"{params.api_host}/update_data", model.model_dump_json(), headers=headers)
 
             latest = dd.simdata.latest()
     finally:
