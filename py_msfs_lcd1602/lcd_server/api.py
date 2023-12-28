@@ -23,7 +23,7 @@ socket.bind(f"tcp://localhost:{params.zmq_port}")
 
 
 def jws_validation(token=Depends(HTTPBearer())):
-    return deserialize_compact(token, "test", [ "HS256" ])
+    return deserialize_compact(token.credentials, "test", [ "HS256" ])
 
 @app.post("/update_data", status_code=202)
 async def update_data(mdl: MSFSDataList):
