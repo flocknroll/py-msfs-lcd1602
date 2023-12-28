@@ -95,12 +95,12 @@ def run():
                         lcd.set_cursor_pos(1, 8)
                         lcd.write_int(MC_CHAR)
                         lcd.write_ascii_string(f"{value}".ljust(7)[0:7])
-                    elif name == "VARIOMETER RATE": # "VERTICAL SPEED"
+                    elif name == "CALCULATED_VS":
                         lcd.set_cursor_pos(0, 8)
                         lcd.write_int(VS_CHAR)
                         lcd.write_ascii_string(f"{int(value)}".ljust(7)[0:7])
                     else:
-                        logging.warn(f"Unknown data: {name}")
+                        logging.debug(f"Ignored data: {name}")
             elif msg["command"] == "clear":
                 lcd.clear()
             elif msg["command"] == "set_rgb":

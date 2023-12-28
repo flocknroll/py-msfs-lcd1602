@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
             if "PLANE ALTITUDE" in dd.simdata:
                 plane_alt = dd.simdata["PLANE ALTITUDE"]
-                calculated_vs = (last_alt["value"] - plane_alt) / (received_time - last_alt["time"]) * 60.0
+                calculated_vs = (plane_alt - last_alt["value"]) / (received_time - last_alt["time"]) * 60.0
                 last_alt = {
                     "value": plane_alt,
                     "time": received_time
