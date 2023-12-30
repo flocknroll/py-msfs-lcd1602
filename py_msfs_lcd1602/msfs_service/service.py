@@ -2,6 +2,8 @@ import logging
 import requests
 import argparse
 import time
+import pendulum
+import json
 
 from time import sleep
 from joserfc.jws import serialize_compact
@@ -13,6 +15,7 @@ from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
 
 parser = argparse.ArgumentParser("MSFS to LCS service")
 parser.add_argument("--api-host", default="http://192.168.1.25:8081")
+parser.add_argument("--private-key-path", "-k", default="foo")
 
 def run():
     params = parser.parse_args()
@@ -69,7 +72,7 @@ def run():
             model = MSFSDataList(data = data)
 
             if len(data):
-                token = serialize_compact({"alg": "HS256"}, model.model_dump_json(), "test")
+                token = serialize_compact({"alg": "HS256"}, json.dumps({"ts": pendulum.now('UTC').int_timestamp}), params.private_key_path)
                 headers = {
                     "Authorization": f"Bearer {token}",
                 }

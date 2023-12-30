@@ -17,7 +17,7 @@ def run():
 
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect(f"tcp://localhost:{params.port}")
+    socket.connect(f"tcp://127.0.0.1:{params.port}")
     socket.setsockopt(zmq.SUBSCRIBE, b"")
 
     lcd = LCD1602(params.bus_id)
