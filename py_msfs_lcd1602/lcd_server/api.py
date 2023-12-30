@@ -27,7 +27,6 @@ socket.bind(f"tcp://127.0.0.1:{params.zmq_port}")
 async def jws_validation(token=Depends(HTTPBearer())):
     try:
         ts = int(json.loads(deserialize_compact(token.credentials, params.pub_key_path, [ "HS256" ]).payload)["ts"])
-        print(pendulum.now('UTC').int_timestamp - ts)
         if pendulum.now('UTC').int_timestamp - ts <= 1:  # We allow a 1sec lag
             return True
         else:
@@ -38,18 +37,17 @@ async def jws_validation(token=Depends(HTTPBearer())):
         raise HTTPException(403, "Invalid token")
 
 @app.post("/update_data", status_code=202)
-async def update_data(mdl: MSFSDataList):
+async def update_data(mdl: MSFSDataList, auth=Depends(jws_validation)):
     socket.send_string(mdl.model_dump_json())
 
 @app.post("/clear", status_code=202)
-async def clear(sig_payload=Depends(jws_validation)):
-    print(sig_payload)
+async def clear(auth=Depends(jws_validation)):
 
     data = { "command": "clear" }
     socket.send_string(json.dumps(data))
 
 @app.post("/set_rgb/{r}/{g}/{b}", status_code=202)
-async def set_rgb(r: int, g: int, b: int):
+async def set_rgb(r: int, g: int, b: int, auth=Depends(jws_validation)):
     data = {
         "command": "set_rgb",
         "r": r,

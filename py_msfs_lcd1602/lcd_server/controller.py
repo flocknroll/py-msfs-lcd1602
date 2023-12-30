@@ -24,7 +24,7 @@ def run():
     lcd.init_lcd(cursor=False, blink=False)
     lcd.rgb_set_modes()
     lcd.rgb_full_control()
-    lcd.set_rgb(255, 255, 255)
+    lcd.set_rgb(0, 255, 0)
 
     # Alt char
     ALT_CHAR_1 = lcd.define_char(0,
@@ -151,7 +151,7 @@ def run():
                             value = 3000
                         pwr = int(value * -255 / 3000 + 255)
 
-                        lcd.set_rgb(255, pwr, pwr)
+                        lcd.set_rgb(255-pwr, pwr, 0)
                     else:
                         logging.debug(f"Ignored data: {name}")
             elif msg["command"] == "clear":
