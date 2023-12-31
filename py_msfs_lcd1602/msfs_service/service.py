@@ -14,7 +14,7 @@ from py_msfs_lcd1602.models.api import MSFSDataList, MSFSData
 
 
 parser = argparse.ArgumentParser("MSFS to LCS service")
-parser.add_argument("--api-host", default="http://192.168.1.25:8081")
+parser.add_argument("--api-host", default="https://pi4.flocknroll.net:8081")
 parser.add_argument("--private-key-path", "-k", default="foo")
 
 def run():

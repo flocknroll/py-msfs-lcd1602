@@ -17,6 +17,8 @@ parser = argparse.ArgumentParser("LCD1602 controller API")
 parser.add_argument("--zmq-port", default=5555)
 parser.add_argument("--http-port", default=8081)
 parser.add_argument("--pub-key-path", "-k", default="foo")
+parser.add_argument("--ssl-key-path", default=None)
+parser.add_argument("--ssl-cert-path", default=None)
 params = parser.parse_args()
 
 context = zmq.Context()
@@ -57,7 +59,7 @@ async def set_rgb(r: int, g: int, b: int, auth=Depends(jws_validation)):
     socket.send_string(json.dumps(data))
 
 def run():
-    uvicorn.run(app, host="0.0.0.0", port=params.http_port)
+    uvicorn.run(app, host="::", port=params.http_port, ssl_keyfile=params.ssl_key_path, ssl_certfile=params.ssl_cert_path)
 
 if __name__ == "__main__":
     run()
