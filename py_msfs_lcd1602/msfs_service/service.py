@@ -72,7 +72,7 @@ def run():
             model = MSFSDataList(data = data)
 
             if len(data):
-                token = serialize_compact({"alg": "HS256", "key": "msfs_service"}, json.dumps({"ts": pendulum.now('UTC').int_timestamp}), params.private_key_path)
+                token = serialize_compact({"alg": "HS256", "key": "msfs_service", "crit": ["key"]}, json.dumps({"ts": pendulum.now('UTC').int_timestamp}), params.private_key_path)
                 headers = {
                     "Authorization": f"Bearer {token}",
                 }
